@@ -4,6 +4,7 @@
 
 #include "Vector.h"
 
-namespace Geometry {
+namespace Geometry
+{
 
 } // Geometry
