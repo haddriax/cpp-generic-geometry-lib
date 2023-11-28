@@ -125,12 +125,12 @@ namespace Geometry {
         auto operator+(const Vector<Dim2, T2>&other) const -> Vector<Dim, T> {
             Vector<Dim, T> result;
             if (Dim < Dim2) {
-                for (unsigned int i = 0; i < Dim; ++i) {
+                for (auto i = 0; i < Dim; ++i) {
                     result[i] = _data[i] + other[i];
                 }
             }
             else {
-                for (unsigned int i = 0; i < Dim2; ++i) {
+                for (auto i = 0; i < Dim2; ++i) {
                     result[i] = _data[i] + other[i];
                 }
             }
@@ -146,12 +146,12 @@ namespace Geometry {
         auto operator-(const Vector<Dim2, T2>&other) const -> Vector<Dim, T> {
             Vector<Dim, T> result;
             if (Dim < Dim2) {
-                for (unsigned int i = 0; i < Dim; ++i) {
+                for (auto i = 0; i < Dim; ++i) {
                     result[i] = _data[i] - other[i];
                 }
             }
             else {
-                for (unsigned int i = 0; i < Dim2; ++i) {
+                for (auto i = 0; i < Dim2; ++i) {
                     result[i] = _data[i] - other[i];
                 }
             }
@@ -167,12 +167,12 @@ namespace Geometry {
         auto operator*(const Vector<Dim2, T2>&other) const -> Vector<Dim, T> {
             Vector<Dim, T> result;
             if (Dim < Dim2) {
-                for (unsigned int i = 0; i < Dim; ++i) {
+                for (auto i = 0; i < Dim; ++i) {
                     result[i] = _data[i] * other[i];
                 }
             }
             else {
-                for (unsigned int i = 0; i < Dim2; ++i) {
+                for (auto i = 0; i < Dim2; ++i) {
                     result[i] = _data[i] * other[i];
                 }
             }
