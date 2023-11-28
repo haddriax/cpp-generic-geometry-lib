@@ -8,6 +8,5 @@ int main()
     std::cout << vec1.xyz() << std::endl;
     std::cout << vec1.xy() << std::endl;
     std::cout << vec1.x() << std::endl;
-
     return 0;
 }

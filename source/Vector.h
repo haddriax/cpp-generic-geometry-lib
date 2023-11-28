@@ -11,14 +11,22 @@
 #include <array>
 
 namespace Geometry {
-    template<unsigned int Dim, typename T>
+    template<
+        unsigned int Dim,
+        typename T,
+        typename = std::enable_if_t<std::is_arithmetic_v<T>, T>
+    >
     class Vector {
     private:
         std::array<T, Dim> _data;
 
     public:
         // Default constructor, initializes all elements to zero.
-        Vector();
+        Vector() {
+            for (auto i = 0; i < Dim; ++i) {
+                _data[i] = 0;
+            }
+        }
 
         // Copy constructor.
         Vector(const Vector& other) {
@@ -44,13 +52,11 @@ namespace Geometry {
                           "Number of arguments must match the vector dimension.");
             initialize(std::forward<Args>(args)...);
         }
-
         template<typename Arg, typename... Args>
         void initialize(Arg&&arg, Args&&... args) {
             _data[Dim - sizeof...(Args) - 1] = std::forward<Arg>(arg);
             initialize(std::forward<Args>(args)...);
         }
-
         // Base case when there is no more arguments. End of recursion.
         void initialize() {
         }
@@ -62,15 +68,26 @@ namespace Geometry {
         }
 
         // SFINAE (Substitution Failure Is Not An Error)
+        // Get x element.
         template<unsigned int D = Dim>
-        std::enable_if_t<D >= 1, T> x() const;
+        auto x() const -> std::enable_if_t<D >= 1, T>
+        {
+            return _data[0];
+        }
 
+        // Get Vector from x and y elements.
         template<unsigned int D = Dim>
-        // inline typename std::enable_if<d >= 2, Vector<2, T>>::type xy() const; // <=> enable_if_t
-        std::enable_if_t<D >= 2, Vector<2, T>> xy() const;
+        auto xy() const -> std::enable_if_t<D >= 2, Vector<2, T>>
+        {
+            return Vector<2, T>(_data[0], _data[1]);
+        }
 
+        // Get Vector from x, y and z elements.
         template<unsigned int D = Dim>
-        std::enable_if_t<D >= 3, Vector<3, T>> xyz() const;
+        auto xyz() const -> std::enable_if_t<D >= 3, Vector<3, T>>
+        {
+            return Vector<3, T>(_data[0], _data[1], _data[2]);
+        }
 
         // Operators overload
         /**
@@ -82,6 +99,7 @@ namespace Geometry {
             return _data[index];
         }
 
+        // Access a Vector element.
         T& operator[](std::size_t index) {
             return _data[index];
         }
@@ -104,7 +122,20 @@ namespace Geometry {
          * \return new vector from (this + other), matching first vector type and dim.
          */
         template<unsigned int Dim2, typename T2>
-        auto operator+(const Vector<Dim2, T2>&other) const -> Vector<Dim, T>;
+        auto operator+(const Vector<Dim2, T2>&other) const -> Vector<Dim, T> {
+            Vector<Dim, T> result;
+            if (Dim < Dim2) {
+                for (unsigned int i = 0; i < Dim; ++i) {
+                    result[i] = _data[i] + other[i];
+                }
+            }
+            else {
+                for (unsigned int i = 0; i < Dim2; ++i) {
+                    result[i] = _data[i] + other[i];
+                }
+            }
+            return result;
+        }
 
         /**
          * \brief - operator, substract two vectors dim by dim.
@@ -112,7 +143,20 @@ namespace Geometry {
          * \return new vector from (this - other), matching first vector type and dim.
         */
         template<unsigned int Dim2, typename T2>
-        auto operator-(const Vector<Dim2, T2>&other) const -> Vector<Dim, T>;
+        auto operator-(const Vector<Dim2, T2>&other) const -> Vector<Dim, T> {
+            Vector<Dim, T> result;
+            if (Dim < Dim2) {
+                for (unsigned int i = 0; i < Dim; ++i) {
+                    result[i] = _data[i] - other[i];
+                }
+            }
+            else {
+                for (unsigned int i = 0; i < Dim2; ++i) {
+                    result[i] = _data[i] - other[i];
+                }
+            }
+            return result;
+        }
 
         /**
          * \brief * operator, multiply two vectors dim by dim.
@@ -120,8 +164,29 @@ namespace Geometry {
          * \return new vector from (this * other), matching first vector type and dim.
          */
         template<unsigned int Dim2, typename T2>
-        auto operator*(const Vector<Dim2, T2>&other) const -> Vector<Dim, T>;
+        auto operator*(const Vector<Dim2, T2>&other) const -> Vector<Dim, T> {
+            Vector<Dim, T> result;
+            if (Dim < Dim2) {
+                for (unsigned int i = 0; i < Dim; ++i) {
+                    result[i] = _data[i] * other[i];
+                }
+            }
+            else {
+                for (unsigned int i = 0; i < Dim2; ++i) {
+                    result[i] = _data[i] * other[i];
+                }
+            }
+            return result;
+        }
 
+        /**
+         * \brief Log Vector coordinates in line.
+         * \param os ostreamstd::enable_if_t<D >= 1, T> Vector<Dim, T>::x() const {
+        return _data[0];
+    }
+         * \param v Logged vector
+         * \return ostream
+         */
         friend std::ostream& operator<<(std::ostream& os, const Vector<Dim, T>& v) {
             os << "Vector" << Dim << '[';
             for(auto i = 0; i < v._data.size() - 1; ++i)
@@ -132,100 +197,29 @@ namespace Geometry {
         }
 
         /**
+         * \brief Return the dimension of this Vector type.
+         * \return dimension of the Vector
+         */
+        static constexpr auto dim()
+        {
+            return Dim;
+        }
+
+        /**
          * \brief Compute the dot product of this . other
          * \tparam T2 Type of the other vector.
          * \param other Other vector.
          * \return Dot produt of this with other.
          */
         template<typename T2>
-        auto dot(const Vector<Dim, T2>&other);
+        auto dot(const Vector<Dim, T2>&other) {
+            auto r = 0;
+            for (auto i = 0; i < Dim; ++i) {
+                r += (this[i] + other[i]);
+            }
+            return r;
+        }
     };
-
-    template<unsigned Dim, typename T>
-    Vector<Dim, T>::Vector() {
-        for (auto i = 0; i < Dim; ++i) {
-            _data[i] = 0;
-        }
-    }
-
-    template<unsigned Dim, typename T>
-    template<unsigned D>
-    std::enable_if_t<D >= 1, T> Vector<Dim, T>::x() const {
-        return _data[0];
-    }
-
-    template<unsigned Dim, typename T>
-    template<unsigned D>
-    std::enable_if_t<D >= 2, Vector<2, T>> Vector<Dim, T>::xy() const {
-        return Vector<2, T>(_data[0], _data[1]);
-    }
-
-    template<unsigned Dim, typename T>
-    template<unsigned D>
-    std::enable_if_t<D >= 3, Vector<3, T>> Vector<Dim, T>::xyz() const {
-        return Vector<3, T>(_data[0], _data[1], _data[2]);
-    }
-
-    template<unsigned Dim, typename T>
-    template<unsigned Dim2, typename T2>
-    auto Vector<Dim, T>::operator+(const Vector<Dim2, T2>&other) const -> Vector<Dim, T> {
-        Vector<Dim, T> result;
-        if (Dim < Dim2) {
-            for (unsigned int i = 0; i < Dim; ++i) {
-                result[i] = _data[i] + other[i];
-            }
-        }
-        else {
-            for (unsigned int i = 0; i < Dim2; ++i) {
-                result[i] = _data[i] + other[i];
-            }
-        }
-        return result;
-    }
-
-    template<unsigned Dim, typename T>
-    template<unsigned Dim2, typename T2>
-    auto Vector<Dim, T>::operator-(const Vector<Dim2, T2>&other) const -> Vector<Dim, T> {
-        Vector<Dim, T> result;
-        if (Dim < Dim2) {
-            for (unsigned int i = 0; i < Dim; ++i) {
-                result[i] = _data[i] - other[i];
-            }
-        }
-        else {
-            for (unsigned int i = 0; i < Dim2; ++i) {
-                result[i] = _data[i] - other[i];
-            }
-        }
-        return result;
-    }
-
-    template<unsigned Dim, typename T>
-    template<unsigned Dim2, typename T2>
-    auto Vector<Dim, T>::operator*(const Vector<Dim2, T2>&other) const -> Vector<Dim, T> {
-        Vector<Dim, T> result;
-        if (Dim < Dim2) {
-            for (unsigned int i = 0; i < Dim; ++i) {
-                result[i] = _data[i] * other[i];
-            }
-        }
-        else {
-            for (unsigned int i = 0; i < Dim2; ++i) {
-                result[i] = _data[i] * other[i];
-            }
-        }
-        return result;
-    }
-
-    template<unsigned Dim, typename T>
-    template<typename T2>
-    auto Vector<Dim, T>::dot(const Vector<Dim, T2>&other) {
-        auto r = 0;
-        for (auto i = 0; i < Dim; ++i) {
-            r += (this[i] + other[i]);
-        }
-        return r;
-    }
 
     // Typedefs for common use cases.
     using Vec2f = Geometry::Vector<2, float>;
