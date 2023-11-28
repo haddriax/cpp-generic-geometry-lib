@@ -1,6 +1,7 @@
 #include <iostream>
 
 #include "source/Vector.h"
+#include "source/Matrix.h"
 
 int main()
 {

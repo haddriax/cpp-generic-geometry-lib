@@ -1,5 +1,5 @@
 //
-// Created by hadriax on 25/11/23.
+// Created by Gael on 25/11/23.
 //
 #ifndef VECTOR_H
 #define VECTOR_H
