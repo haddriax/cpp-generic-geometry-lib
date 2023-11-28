@@ -8,15 +8,9 @@
 #include <ostream>
 #include <type_traits>
 #include <utility>
+#include <array>
 
 namespace Geometry {
-
-    template<unsigned int Dim, typename T>
-    class Vector;
-
-    template<unsigned int Dim, typename T>
-    std::ostream& operator<< (std::ostream& os, const Vector<Dim, T>& v);
-
     template<unsigned int Dim, typename T>
     class Vector {
     private:
