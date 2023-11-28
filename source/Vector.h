@@ -212,12 +212,44 @@ namespace Geometry {
          * \return Dot produt of this with other.
          */
         template<typename T2>
-        auto dot(const Vector<Dim, T2>&other) {
+        auto dot(const Vector<Dim, T2>& other) {
             auto r = 0;
             for (auto i = 0; i < Dim; ++i) {
                 r += (this[i] + other[i]);
             }
             return r;
+        }
+
+        // @todo magnitude squared
+        auto squared_mag() const
+        {
+            return 1;
+        }
+
+        // @todo magnitude
+        auto magnitude() const
+        {
+            return 1;
+        }
+
+        // @todo normalized copy
+        auto normalized() const
+        {
+            return Vector();
+        }
+
+        // @todo normalize this
+        auto normalize() const
+        {
+            return &this;
+        }
+
+
+
+        // @todo cross product
+        template<typename T2>
+        auto cross(const Vector<Dim, T2>& other) {
+            return Vector();
         }
     };
 
