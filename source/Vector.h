@@ -9,13 +9,13 @@
 #include <type_traits>
 #include <utility>
 #include <array>
+#include <cmath>
 
 namespace Geometry {
     template<
         unsigned int Dim,
-        typename T,
-        typename = std::enable_if_t<std::is_arithmetic_v<T>, T>
-    >
+        typename T
+    > requires std::is_arithmetic_v<T>
     class Vector {
     private:
         std::array<T, Dim> _data;
@@ -70,22 +70,19 @@ namespace Geometry {
         // SFINAE (Substitution Failure Is Not An Error)
         // Get x element.
         template<unsigned int D = Dim>
-        auto x() const -> std::enable_if_t<D >= 1, T>
-        {
+        auto x() const requires (Dim >= 1) {
             return _data[0];
         }
 
         // Get Vector from x and y elements.
         template<unsigned int D = Dim>
-        auto xy() const -> std::enable_if_t<D >= 2, Vector<2, T>>
-        {
+        auto xy() const requires (Dim >= 2) {
             return Vector<2, T>(_data[0], _data[1]);
         }
 
         // Get Vector from x, y and z elements.
         template<unsigned int D = Dim>
-        auto xyz() const -> std::enable_if_t<D >= 3, Vector<3, T>>
-        {
+        auto xyz() const requires (Dim >= 3) {
             return Vector<3, T>(_data[0], _data[1], _data[2]);
         }
 
@@ -124,15 +121,9 @@ namespace Geometry {
         template<unsigned int Dim2, typename T2>
         auto operator+(const Vector<Dim2, T2>&other) const -> Vector<Dim, T> {
             Vector<Dim, T> result;
-            if (Dim < Dim2) {
-                for (auto i = 0; i < Dim; ++i) {
-                    result[i] = _data[i] + other[i];
-                }
-            }
-            else {
-                for (auto i = 0; i < Dim2; ++i) {
-                    result[i] = _data[i] + other[i];
-                }
+            static_assert(Dim == Dim2, "Cannot add vectors of different dimensions.");
+            for (auto i = 0; i < Dim; ++i) {
+                result[i] = _data[i] + other[i];
             }
             return result;
         }
@@ -145,15 +136,9 @@ namespace Geometry {
         template<unsigned int Dim2, typename T2>
         auto operator-(const Vector<Dim2, T2>&other) const -> Vector<Dim, T> {
             Vector<Dim, T> result;
-            if (Dim < Dim2) {
-                for (auto i = 0; i < Dim; ++i) {
-                    result[i] = _data[i] - other[i];
-                }
-            }
-            else {
-                for (auto i = 0; i < Dim2; ++i) {
-                    result[i] = _data[i] - other[i];
-                }
+            static_assert(Dim == Dim2, "Cannot substract vectors of different dimensions.");
+            for (auto i = 0; i < Dim; ++i) {
+                result[i] = _data[i] - other[i];
             }
             return result;
         }
@@ -180,14 +165,30 @@ namespace Geometry {
         }
 
         /**
+         * Compare two vectors by their data.
+         * \param other
+         * \return true if the vector have the same values.
+         */
+        bool operator==(const Vector &other) const {
+            return _data == other._data;
+        }
+
+        /**
+        * Compare two vectors by their data.
+        * \param other
+        * \return true if the vector have different values.
+        */
+        bool operator!=(const Vector &other) const {
+            return !(*this == other);
+        }
+
+        /**
          * \brief Log Vector coordinates in line.
-         * \param os ostreamstd::enable_if_t<D >= 1, T> Vector<Dim, T>::x() const {
-        return _data[0];
-    }
+         * \param os ostream
          * \param v Logged vector
          * \return ostream
          */
-        friend std::ostream& operator<<(std::ostream& os, const Vector<Dim, T>& v) {
+        friend std::ostream &operator<<(std::ostream& os, const Vector<Dim, T>& v) {
             os << "Vector" << Dim << '[';
             for(auto i = 0; i < v._data.size() - 1; ++i)
                 os << v._data[i] << ';';
@@ -215,47 +216,64 @@ namespace Geometry {
         auto dot(const Vector<Dim, T2>& other) {
             auto r = 0;
             for (auto i = 0; i < Dim; ++i) {
-                r += (this[i] + other[i]);
+                r += (_data[i] *  other[i]);
             }
             return r;
         }
 
-        // @todo magnitude squared
-        auto squared_mag() const
-        {
-            return 1;
+        /**
+         * \brief Compute the squared magnitude of this vector
+         * \return squared magnitude of this vector.
+         */
+        auto squared_mag() const {
+            T result;
+            for (auto i : _data) {
+                result += i * i;
+            }
+            return result;
         }
 
-        // @todo magnitude
-        auto magnitude() const
-        {
-            return 1;
+        auto magnitude() const {
+            return std::sqrt(squared_mag());
         }
 
-        // @todo normalized copy
-        auto normalized() const
-        {
-            return Vector();
+        auto normalized() const {
+            auto vect_mag = magnitude();
+            Vector<Dim, T> normalized;
+            for (auto i = 0; i < Dim; ++i) {
+                normalized[i] = _data[i] / vect_mag;
+            }
+            return normalized;
         }
 
-        // @todo normalize this
-        auto normalize() const
-        {
+        auto normalize() const {
+            auto vect_mag = magnitude();
+            for (auto& d : _data) {
+                d /= vect_mag;
+            }
             return &this;
         }
 
-
-
-        // @todo cross product
-        template<typename T2>
-        auto cross(const Vector<Dim, T2>& other) {
-            return Vector();
+        template<typename T2 = T>
+        auto cross(const Vector<Dim, T2>&other) const
+            requires (Dim == 3) {
+            // Even though requires should do the work, intellisense might still show the method.
+            static_assert(Dim == 3, "Cannot cross vectors that are not 3D.");
+            return Vector<3, T>(
+                _data[1] * other[2] - _data[2] * other[1],
+                _data[2] * other[0] - _data[0] * other[2],
+                _data[0] * other[1] - _data[1] * other[0]
+            );
         }
     };
 
     // Typedefs for common use cases.
-    using Vec2f = Geometry::Vector<2, float>;
-    using Vec3f = Geometry::Vector<3, float>;
+    using Vector2 = Vector<2, double>;
+    using Vector3  = Vector<3, double>;
+    using Vector2f = Vector<2, float>;
+    using Vector3f = Vector<3, float>;
+    using Vector2i = Vector<2, int>;
+    using Vector3i = Vector<3, int>;
 } // namespace Geometry
 
 #endif // VECTOR_H
