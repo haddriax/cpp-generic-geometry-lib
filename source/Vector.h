@@ -188,7 +188,7 @@ namespace Geometry {
          * \param v Logged vector
          * \return ostream
          */
-        friend std::ostream &operator<<(std::ostream& os, const Vector<Dim, T>& v) {
+        friend std::ostream &operator<<(std::ostream &os, const Vector<Dim, T> &v) {
             os << "Vector" << Dim << '[';
             for(auto i = 0; i < v._data.size() - 1; ++i)
                 os << v._data[i] << ';';
@@ -216,7 +216,7 @@ namespace Geometry {
         auto dot(const Vector<Dim, T2>& other) {
             auto r = 0;
             for (auto i = 0; i < Dim; ++i) {
-                r += (_data[i] *  other[i]);
+                r += (_data[i] * other[i]);
             }
             return r;
         }
@@ -227,7 +227,7 @@ namespace Geometry {
          */
         auto squared_mag() const {
             T result;
-            for (auto i : _data) {
+            for (auto i: _data) {
                 result += i * i;
             }
             return result;
@@ -248,14 +248,14 @@ namespace Geometry {
 
         auto normalize() const {
             auto vect_mag = magnitude();
-            for (auto& d : _data) {
+            for (auto &d: _data) {
                 d /= vect_mag;
             }
             return &this;
         }
 
         template<typename T2 = T>
-        auto cross(const Vector<Dim, T2>&other) const
+        auto cross(const Vector<Dim, T2> &other) const
             requires (Dim == 3) {
             // Even though requires should do the work, intellisense might still show the method.
             static_assert(Dim == 3, "Cannot cross vectors that are not 3D.");
@@ -269,7 +269,7 @@ namespace Geometry {
 
     // Typedefs for common use cases.
     using Vector2 = Vector<2, double>;
-    using Vector3  = Vector<3, double>;
+    using Vector3 = Vector<3, double>;
     using Vector2f = Vector<2, float>;
     using Vector3f = Vector<3, float>;
     using Vector2i = Vector<2, int>;
