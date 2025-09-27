@@ -7,7 +7,7 @@
  * component-wise multiplication, normalization, dot and cross products.
  * Requires C++20
  * @author Gael
- * @date 2023-11-25
+ * @date 27/09/2025
  */
 
 #ifndef VECTOR_H
@@ -21,7 +21,6 @@
 #include <cmath>
 
 namespace Geometry {
-
     /**
      * @class Vector
      * @brief A generic N-dimensional mathematical vector class.
@@ -46,22 +45,24 @@ namespace Geometry {
         }
 
         /// @brief Copy constructor.
-        constexpr Vector(const Vector& other) : _data(other._data) {}
+        constexpr Vector(const Vector &other) : _data(other._data) {
+        }
 
         /// @brief Move constructor.
-        constexpr Vector(Vector&& other) noexcept : _data(std::move(other._data)) {}
+        constexpr Vector(Vector &&other) noexcept : _data(std::move(other._data)) {
+        }
 
         /// @brief Constructor with Dim number of arguments.
         /// @note Each argument becomes a coordinate component.
         template<typename... Args>
             requires (sizeof...(Args) == Dim) // C++20
-        constexpr explicit Vector(Args&&... args) : _data{std::forward<Args>(args)...} {
+        constexpr explicit Vector(Args &&... args) : _data{std::forward<Args>(args)...} {
         }
 
         virtual ~Vector() = default;
 
         /// @brief Access the internal data.
-        constexpr const std::array<T,Dim >& data() const {
+        constexpr const std::array<T, Dim> &data() const {
             return _data;
         }
 
@@ -86,17 +87,17 @@ namespace Geometry {
 
         // Operators overload
         /// @brief Const element access by index.
-        constexpr const T& operator[](std::size_t index) const {
+        constexpr const T &operator[](std::size_t index) const {
             return _data[index];
         }
 
         /// @brief Mutable element access by index.
-        constexpr T& operator[](std::size_t index) {
+        constexpr T &operator[](std::size_t index) {
             return _data[index];
         }
 
         /// @brief Copy assignment.
-        Vector& operator=(const Vector& other) {
+        Vector& operator=(const Vector &other) {
             if (this != &other) {
                 _data = other._data;
             }
@@ -104,7 +105,7 @@ namespace Geometry {
         }
 
         /// @brief Move assignment.
-        Vector& operator=(Vector&& other) noexcept {
+        Vector& operator=(Vector&&other) noexcept {
             if (this != &other) {
                 _data = std::move(other._data);
             }
@@ -117,7 +118,7 @@ namespace Geometry {
          * @return Resulting vector: vec{c} = vec{a} + vec{b}
          */
         template<unsigned int Dim2, typename T2>
-        [[nodiscard]] constexpr auto operator+(const Vector<Dim2, T2>&other) const {
+        [[nodiscard]] constexpr auto operator+(const Vector<Dim2, T2> &other) const {
             Vector<Dim, T> result;
             static_assert(Dim == Dim2, "Cannot add vectors of different dimensions.");
             for (auto i = 0; i < Dim; ++i) {
@@ -132,7 +133,7 @@ namespace Geometry {
          * @return Resulting vector: vec{c} = vec{a} - vec{b}
          */
         template<unsigned int Dim2, typename T2>
-        [[nodiscard]] constexpr auto operator-(const Vector<Dim2, T2>&other) const {
+        [[nodiscard]] constexpr auto operator-(const Vector<Dim2, T2> &other) const {
             Vector<Dim, T> result;
             static_assert(Dim == Dim2, "Cannot subtract vectors of different dimensions.");
             for (auto i = 0; i < Dim; ++i) {
@@ -146,11 +147,10 @@ namespace Geometry {
          * @return Resulting vector: vec{c}_i = vec{a}_i * vec{b}_i
          */
         template<unsigned int Dim2, typename T2>
-        [[nodiscard]] constexpr auto operator*(const Vector<Dim2, T2>&other) const {
+        [[nodiscard]] constexpr auto operator*(const Vector<Dim2, T2> &other) const {
             Vector<Dim, T> result;
             static_assert(Dim == Dim2, "Cannot subtract vectors of different dimensions.");
-            for (auto i = 0; i < Dim; ++i)
-            {
+            for (auto i = 0; i < Dim; ++i) {
                 result[i] = _data[i] * other[i];
             }
             return result;
@@ -160,7 +160,7 @@ namespace Geometry {
         * @brief Component-wise multiplication with scalar.
         * @return Resulting vector: vec{v}_i = vec{v}_i * scalar
         */
-        [[nodiscard]] constexpr  Vector operator*(T scalar) const {
+        [[nodiscard]] constexpr Vector operator*(T scalar) const {
             using ScalarType = decltype(_data[0] * scalar);
             Vector<Dim, ScalarType> result;
             for (auto i = 0; i < Dim; ++i)
@@ -168,7 +168,7 @@ namespace Geometry {
             return result;
         }
 
-        [[nodiscard]] friend Vector operator*(T scalar, const Vector& v) {
+        [[nodiscard]] friend Vector operator*(T scalar, const Vector &v) {
             return v * scalar;
         }
 
@@ -203,7 +203,7 @@ namespace Geometry {
          * @return Scalar value: vec{a} dot vec{b} = sum a_i b_i
          */
         template<typename T2>
-        [[nodiscard]] auto dot(const Vector<Dim, T2>& other) const {
+        [[nodiscard]] auto dot(const Vector<Dim, T2> &other) const {
             decltype(_data[0] * other[0]) r = 0;
             for (auto i = 0; i < Dim; ++i) {
                 r += (_data[i] * other[i]);
