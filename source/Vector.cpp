@@ -6,5 +6,10 @@
 
 namespace Geometry
 {
-
+    template class Vector<2, float>;
+    template class Vector<3, float>;
+    template class Vector<2, double>;
+    template class Vector<3, double>;
+    template class Vector<2, int>;
+    template class Vector<3, int>;
 } // Geometry

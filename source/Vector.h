@@ -19,6 +19,8 @@
 #include <utility>
 #include <array>
 #include <cmath>
+#include <cassert>
+#include <stdexcept>
 
 namespace Geometry {
     /**
@@ -44,6 +46,13 @@ namespace Geometry {
             }
         }
 
+        /// @brief Constructor that initializes all components to a given value.
+        explicit constexpr Vector(T default_t_value) {
+            for (auto i = 0; i < Dim; ++i) {
+                _data[i] = default_t_value;
+            }
+        }
+
         /// @brief Copy constructor.
         constexpr Vector(const Vector &other) : _data(other._data) {
         }
@@ -55,11 +64,11 @@ namespace Geometry {
         /// @brief Constructor with Dim number of arguments.
         /// @note Each argument becomes a coordinate component.
         template<typename... Args>
-            requires (sizeof...(Args) == Dim) // C++20
+            requires (sizeof...(Args) == Dim)
         constexpr explicit Vector(Args &&... args) : _data{std::forward<Args>(args)...} {
         }
 
-        virtual ~Vector() = default;
+        ~Vector() = default;
 
         /// @brief Access the internal data.
         constexpr const std::array<T, Dim> &data() const {
@@ -97,7 +106,7 @@ namespace Geometry {
         }
 
         /// @brief Copy assignment.
-        Vector& operator=(const Vector &other) {
+        Vector &operator=(const Vector &other) {
             if (this != &other) {
                 _data = other._data;
             }
@@ -105,7 +114,7 @@ namespace Geometry {
         }
 
         /// @brief Move assignment.
-        Vector& operator=(Vector&&other) noexcept {
+        Vector &operator=(Vector &&other) noexcept {
             if (this != &other) {
                 _data = std::move(other._data);
             }
@@ -237,7 +246,8 @@ namespace Geometry {
          */
         [[nodiscard("`normalized()` returns a new vector. Use `normalize()` for in-place operation.")]]
         auto normalized() const {
-            auto vect_mag = magnitude();
+            const auto vect_mag = magnitude();
+            assert(vect_mag > 0 && "Vector magnitude must be positive and > 0 for normalization.");
             Vector<Dim, T> normalized;
             for (auto i = 0; i < Dim; ++i) {
                 normalized[i] = _data[i] / vect_mag;
@@ -250,7 +260,8 @@ namespace Geometry {
          * @note Modifies the current vector.
          */
         void normalize() {
-            auto vect_mag = magnitude();
+            const auto vect_mag = magnitude();
+            assert(vect_mag > 0 && "Vector magnitude must be positive and > 0 for normalization.");
             for (auto &d: _data) {
                 d /= vect_mag;
             }
@@ -273,6 +284,37 @@ namespace Geometry {
                 _data[0] * other[1] - _data[1] * other[0]
             );
         }
+
+        /**
+         * @brief Computes the vector projection of this vector onto another vector.
+         *
+         * The projection of vector 'a' onto vector 'b' is defined as:
+         * proj_b(a) = ((a · b) / (b · b)) * b
+         *
+         * This operation returns a vector in the direction of `project_on` that represents
+         * the component of this vector along `project_on`.
+         *
+         * @tparam T2 The scalar type of the target vector (defaults to T)
+         * @param project_on The vector onto which this vector is projected (must be non-zero)
+         * @return A new vector representing the projection of this vector onto `project_on`
+         * @warning In release builds, no validation is performed. The caller must ensure
+         *          that `project_on` is not a zero vector to avoid undefined behavior.
+         *
+         * Example:
+         * @code
+         * Vector3 v1(3.0, 4.0, 0.0);
+         * Vector3 v2(1.0, 0.0, 0.0);
+         * auto proj = v1.project(v2);  // Returns (3.0, 0.0, 0.0)
+         * @endcode
+         */
+        template<typename T2 = T>
+        [[nodiscard]] auto project(const Vector<Dim, T2> &project_on) const {
+            const auto project_on_mag = project_on.squared_mag();
+            assert(project_on_mag > 0 && "Cannot project onto a zero vector.");
+            const auto scalar = this->dot(project_on) / project_on_mag;
+            return project_on * scalar;
+        }
+
     };
 
     // Typedefs for common use cases.

@@ -36,8 +36,27 @@ int main()
     std::cout << vec1 - vec2 << std::endl;
     std::cout << vec1 - vec2 - vec2 << std::endl;
 
-
     const Geometry::Vector2f vec5(1.0f, 2.0f);
     const Geometry::Vector2 vec6(1.0, 2.0);
+
+    // Init a vector at 1.Of for all 16 dimensions.
+    const Geometry::Vector<16, float> vec_d_16(1.0f);
+    std::cout << "Vec_d_16 : " << vec_d_16 << std::endl;
+
+    // See if it works fine with dim 1 vector
+    const Geometry::Vector<1, float> vec_d_1(42.0f);
+    std::cout << "Vec_d_1 : " << vec_d_1 << std::endl;
+
+    // Try a constexpr initialisation
+    constexpr Geometry::Vector<4, int> vec_d_4(1, 2, 3, 4);
+    static_assert(vec_d_4[0] == 1 && vec_d_4[1] == 2 && vec_d_4[2] == 3 && vec_d_4[3] == 4,
+                  "Constexpr initialisation failed");
+    std::cout << "Vec_d_4 : " << vec_d_4 << std::endl;
+
+
+    const Geometry::Vector3 vec_proj1(-4.0, 2.0, 12.0);
+    const Geometry::Vector3 vec_proj2(3.0, 1.0, 2.0);
+    std::cout << "Vec_proj: : " << vec_proj1.project(vec_proj2) << std::endl;
+
     return 0;
 }
